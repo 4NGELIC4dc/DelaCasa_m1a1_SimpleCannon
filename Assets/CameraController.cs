@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public float sensitivity = 2f;  // Mouse sensitivity
+    public float sensitivity = 2f; // Mouse sensitivity for rotation & panning
+    public float zoomSpeed = 10f;  // Speed of zooming
+    public float minZoom = 5f;     // Min zoom distance
+    public float maxZoom = 50f;    // Max zoom distance
+
     private bool isDragging = false;
     private Vector3 lastMousePosition;
 
@@ -10,13 +14,13 @@ public class CameraController : MonoBehaviour
     {
         Vector3 delta = Vector3.zero;
 
-        // Right-click (rotate)
-        if (Input.GetMouseButtonDown(1)) // Right click pressed
+        // Right click function (rotate camera)
+        if (Input.GetMouseButtonDown(1)) 
         {
             isDragging = true;
             lastMousePosition = Input.mousePosition;
         }
-        else if (Input.GetMouseButtonUp(1)) // Right click released
+        else if (Input.GetMouseButtonUp(1)) 
         {
             isDragging = false;
         }
@@ -30,12 +34,27 @@ public class CameraController : MonoBehaviour
             transform.eulerAngles += new Vector3(rotationX, rotationY, 0);
         }
 
-        // Middle button (panning)
+        // Middle button function (move camera)
         if (Input.GetMouseButton(2)) // Middle mouse button held down
         {
             delta = Input.mousePosition - lastMousePosition;
             Vector3 pan = new Vector3(-delta.x, -delta.y, 0) * sensitivity * 0.01f;
             transform.Translate(pan, Space.Self);
+        }
+
+        // Middle button scroll function (zoom in and out)
+        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        if (scroll != 0)
+        {
+            Vector3 zoomDirection = transform.forward * scroll * zoomSpeed;
+            Vector3 newPosition = transform.position + zoomDirection;
+
+            // Limit zoom within min/max range
+            float distance = Vector3.Distance(newPosition, Vector3.zero);
+            if (distance > minZoom && distance < maxZoom)
+            {
+                transform.position = newPosition;
+            }
         }
 
         lastMousePosition = Input.mousePosition; // Update last position
